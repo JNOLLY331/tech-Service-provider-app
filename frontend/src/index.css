@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+@keyframes pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.4); }
+  100% { transform: scale(1); }
+}
+
+.cart-badge-update {
+  animation: pop 0.3s ease-out;
+}
