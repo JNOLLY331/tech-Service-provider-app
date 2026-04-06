@@ -3,91 +3,143 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
+import { ShieldCheck, Cpu, Globe, ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import ProductCard from '../components/shop/ProductCard';
+import api from '../api/axios';
+
+const HERO_SLIDES = [
+  {
+    title: "Elite Cyber\nSolutions.",
+    subtitle: "Professional tech services for modern businesses in Busia.",
+    gradient: "from-zinc-950 via-zinc-900 to-blue-950",
+    accent: "bg-blue-600",
+  },
+  {
+    title: "Software\nInstallations.",
+    subtitle: "Licensed software deployment & activation for your business.",
+    gradient: "from-blue-950 via-indigo-900 to-zinc-950",
+    accent: "bg-indigo-500",
+  },
+  {
+    title: "E-Portfolio\nCreation.",
+    subtitle: "Beautiful, professional portfolios that open doors.",
+    gradient: "from-zinc-900 via-slate-800 to-zinc-950",
+    accent: "bg-emerald-500",
+  },
+];
+
+const FEATURES = [
+  { icon: <ShieldCheck size={24} />, title: "Secure & Trusted", desc: "All services backed by professional guarantees." },
+  { icon: <Cpu size={24} />, title: "Tech-Forward", desc: "Cutting-edge tools and modern infrastructure." },
+  { icon: <Globe size={24} />, title: "Local & Available", desc: "Based in Busia, ready to serve you today." },
+];
 
 export default function Home() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Define your API base URL
-  const API_URL = "http://127.0.0.1:8000/api/products/items/";
-
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch(API_URL);
-        
-        if (!response.ok) {
-          throw new Error(`Error: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        // Django REST Framework's DefaultRouter usually returns an array 
-        // or a results object if you have pagination enabled.
-        setProducts(Array.isArray(data) ? data : data.results);
+        const { data } = await api.get('products/items/');
+        // DRF may return paginated { results: [] } or a plain array
+        setProducts(Array.isArray(data) ? data : (data.results ?? []));
       } catch (err) {
-        setError(err.message);
         console.error("Failed to fetch products:", err);
+        setError("Could not load products. Please check the backend server.");
       } finally {
         setLoading(false);
       }
     };
-
     fetchProducts();
   }, []);
 
   return (
-    <div className="pb-20">
-      {/* Hero Swiper */}
-      <section className="px-6 py-4">
-        <Swiper 
-          modules={[Autoplay, Pagination]} 
-          pagination={{ clickable: true }} 
-          autoplay={{ delay: 5000 }}
-          className="rounded-[2.5rem] h-[500px] overflow-hidden shadow-2xl"
+    <div className="pb-24">
+      {/* ── HERO SWIPER ── */}
+      <section className="px-4 md:px-6 py-4">
+        <Swiper
+          modules={[Autoplay, Pagination]}
+          pagination={{ clickable: true }}
+          autoplay={{ delay: 5000, disableOnInteraction: false }}
+          loop
+          className="rounded-[2.5rem] h-[480px] md:h-[560px] overflow-hidden shadow-2xl"
         >
-          <SwiperSlide className="bg-slate-900 flex items-center justify-center text-white p-20">
-            <div className="max-w-2xl">
-              <h1 className="text-6xl font-black leading-tight">Elite Cyber <br/> Solutions.</h1>
-              <p className="mt-4 text-slate-400">Professional tech services for modern businesses.</p>
-              <button className="mt-8 bg-blue-600 px-8 py-4 rounded-2xl font-bold hover:bg-blue-700 transition">
-                Explore Services
-              </button>
-            </div>
-          </SwiperSlide>
+          {HERO_SLIDES.map((slide, i) => (
+            <SwiperSlide key={i}>
+              <div className={`w-full h-full bg-gradient-to-br ${slide.gradient} flex items-center p-10 md:p-20 relative overflow-hidden`}>
+                {/* decorative blobs */}
+                <div className="absolute -top-20 -right-20 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl" />
+                <div className="absolute -bottom-20 -left-10 w-60 h-60 bg-indigo-500/10 rounded-full blur-3xl" />
+
+                <div className="max-w-2xl relative z-10">
+                  <h1 className="text-5xl md:text-7xl font-black leading-tight text-white whitespace-pre-line">
+                    {slide.title}
+                  </h1>
+                  <p className="mt-4 text-slate-400 text-lg font-medium max-w-md">
+                    {slide.subtitle}
+                  </p>
+                  <Link
+                    to="/login"
+                    className={`mt-8 inline-flex items-center gap-2 ${slide.accent} px-8 py-4 rounded-2xl font-bold text-white hover:opacity-90 transition-all shadow-xl`}
+                  >
+                    Get Started <ChevronRight size={18} />
+                  </Link>
+                </div>
+              </div>
+            </SwiperSlide>
+          ))}
         </Swiper>
       </section>
 
-      {/* Product Grid */}
-      <section className="max-w-7xl mx-auto px-6 mt-20">
-        <div className="flex justify-between items-end mb-10">
+      {/* ── FEATURE STRIP ── */}
+      <section className="max-w-7xl mx-auto px-6 mt-12 grid grid-cols-1 sm:grid-cols-3 gap-6">
+        {FEATURES.map((f, i) => (
+          <div key={i} className="flex items-start gap-4 bg-zinc-50 border border-zinc-100 rounded-3xl p-6 hover:border-blue-600 transition-all" data-aos="fade-up" data-aos-delay={i * 100}>
+            <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shrink-0">
+              {f.icon}
+            </div>
+            <div>
+              <h3 className="font-black text-sm text-zinc-900">{f.title}</h3>
+              <p className="text-xs text-zinc-400 mt-1 font-medium">{f.desc}</p>
+            </div>
+          </div>
+        ))}
+      </section>
+
+      {/* ── PRODUCT GRID ── */}
+      <section className="max-w-7xl mx-auto px-6 mt-24">
+        <div className="flex justify-between items-end mb-12">
           <div>
-            <h2 className="text-3xl font-black tracking-tight text-gray-900">Featured Services</h2>
-            <p className="text-gray-500 mt-2">Quality work guaranteed by Jnolly Cyber Works.</p>
+            <p className="text-[10px] font-black text-blue-600 uppercase tracking-[0.4em] mb-2">Catalogue</p>
+            <h2 className="text-4xl font-black tracking-tighter text-zinc-900">Featured Services</h2>
+            <p className="text-zinc-400 mt-2 font-medium">Quality guaranteed by Jnolly Cyber Works.</p>
           </div>
         </div>
-        
-        {/* Conditional Rendering based on API State */}
+
         {loading ? (
-          <div className="flex justify-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <div className="flex justify-center py-24">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
           </div>
         ) : error ? (
-          <div className="bg-red-50 p-6 rounded-2xl text-red-600 text-center">
-            <p>Failed to load products. Please check if the backend is running.</p>
+          <div className="bg-red-50 border border-red-100 p-8 rounded-3xl text-center">
+            <p className="text-red-600 font-bold">{error}</p>
+            <p className="text-red-400 text-xs mt-2">Make sure the Django backend is running at port 8000.</p>
+          </div>
+        ) : products.length === 0 ? (
+          <div className="text-center py-24">
+            <p className="text-zinc-400 font-medium">No products available yet. Check back soon!</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            {products.map((product, i) => (
+              <div key={product.id} data-aos="fade-up" data-aos-delay={i * 60}>
+                <ProductCard product={product} />
+              </div>
             ))}
           </div>
-        )}
-
-        {/* Empty State */}
-        {!loading && products.length === 0 && !error && (
-          <p className="text-center text-gray-500">No services available at the moment.</p>
         )}
       </section>
     </div>
