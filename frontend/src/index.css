@@ -6,6 +6,7 @@
 :root {
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-display: 'Space Grotesk', 'Inter', sans-serif;
+  overflow-x: hidden;
 }
 
 /* ─────────────────────────────────────────────────────────────────
