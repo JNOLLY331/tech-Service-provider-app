@@ -166,7 +166,7 @@ export default function Footer() {
             <ul className="space-y-4">
               <li>
                 <a
-                  href="mailto:info@jnollycyber.com"
+                  href="mailto:japhethanold2@gmail.com.com"
                   className="flex items-start gap-3 text-sm transition-all hover:translate-x-1"
                   style={{ color: 'var(--text-secondary)' }}
                 >
