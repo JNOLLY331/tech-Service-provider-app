@@ -296,7 +296,7 @@ export default function Home() {
                       {slide.cta} <ArrowRight size={16} />
                     </Link>
                     <Link
-                      to="/login"
+                      to="#"
                       className="btn-ghost"
                       style={{ borderRadius: "1rem" }}
                     >
