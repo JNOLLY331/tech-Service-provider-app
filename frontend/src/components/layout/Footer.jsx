@@ -204,7 +204,7 @@ export default function Footer() {
         >
           <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
             © {year} Jnolly Cyber Works. Built by{' '}
-            <span style={{ color: 'var(--accent-primary)' }}>Japheth Anold</span>.
+            <span style={{ color: 'var(--accent-primary)' }}> <a href="https://japheth-anold-6zor.onrender.com/" target='_blank'>japheth Anold</a> </span>.
           </p>
           <div className="flex items-center gap-4">
             <a href="#" className="text-xs transition-colors" style={{ color: 'var(--text-muted)' }}>
