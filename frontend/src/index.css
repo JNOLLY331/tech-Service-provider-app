@@ -54,6 +54,7 @@
   --gradient-hero:  linear-gradient(135deg, #050508 0%, #0a0a16 50%, #08082b 100%);
   --gradient-card:  linear-gradient(145deg, #16161f 0%, #1a1a28 100%);
   --gradient-glow:  radial-gradient(ellipse 80% 60% at 50% 0%, rgba(91,91,255,0.12) 0%, transparent 70%);
+  --hover-glow:     #7c7cff;
 }
 
 /* ─────────────────────────────────────────────────────────────────
@@ -99,6 +100,7 @@
   --gradient-hero:  linear-gradient(135deg, #eeeef8 0%, #f0f0ff 50%, #e8e8ff 100%);
   --gradient-card:  linear-gradient(145deg, #ffffff 0%, #f6f6fc 100%);
   --gradient-glow:  radial-gradient(ellipse 80% 60% at 50% 0%, rgba(74,74,238,0.06) 0%, transparent 70%);
+  --hover-glow:     radial-gradient(ellipse 80% 60% at 50% 0%, rgba(74,74,238,0.12) 0%, transparent 70%);
 }
 
 /* ─────────────────────────────────────────────────────────────────

@@ -2,8 +2,17 @@ import { Link } from 'react-router-dom';
 import {
   ShieldCheck, Mail, Phone, MapPin,
   MessageSquare, Code, Camera, Briefcase,
-  ArrowUpRight, Cpu, Globe, Code2, Wifi, Zap
+  ArrowUpRight, Cpu, Globe, Code2, Wifi, Zap,
+  Target
 } from 'lucide-react';
+import React from 'react';
+import { 
+  FaWhatsapp, 
+  FaTiktok, 
+  FaXTwitter, 
+  FaLinkedin, 
+  FaYoutube 
+} from 'react-icons/fa6';
 
 const SERVICES = [
   { label: 'Software Installation', icon: <Cpu size={13} /> },
@@ -22,10 +31,11 @@ const QUICK_LINKS = [
 ];
 
 const SOCIALS = [
-  { icon: <MessageSquare size={16} />, label: 'Twitter / X', href: '#' },
-  { icon: <Code size={16} />, label: 'GitHub', href: '#' },
-  { icon: <Camera size={16} />, label: 'Instagram', href: '#' },
-  { icon: <Briefcase size={16} />, label: 'LinkedIn', href: '#' },
+  { icon: <FaWhatsapp size={22} />, label: 'WhatsApp', href: 'https://wa.me/254704345035'  },
+  { icon: <FaTiktok size={22} />, label: 'TikTok', href: '#' },
+  { icon: <FaXTwitter size={22} />, label: 'Twitter / X', href: '#' },
+  { icon: <FaLinkedin size={22} />, label: 'LinkedIn', href: '#' },
+  { icon: <FaYoutube size={22} />, label: 'YouTube', href: '#' },
 ];
 
 export default function Footer() {
@@ -77,23 +87,24 @@ export default function Footer() {
               e-portfolios,Web Design, app Development, Laptop Troubleshooting and premium cyber solutions.
             </p>
             {/* Socials */}
-            <div className="flex items-center gap-2">
-              {SOCIALS.map((s) => (
-                <a
-                  key={s.label}
-                  href={s.href}
-                  title={s.label}
-                  className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-110"
-                  style={{
-                    background: 'var(--bg-elevated)',
-                    border: '1px solid var(--border-subtle)',
-                    color: 'var(--text-secondary)',
-                  }}
-                >
-                  {s.icon}
-                </a>
-              ))}
-            </div>
+           {/* Social Media Icons */}
+<div className="flex gap-4">
+  {SOCIALS.map((social, index) => (
+    <a
+      key={index}
+      href={social.href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="w-9 h-9 rounded-xl flex items-center justify-center 
+                 transition-all duration-300 
+                 hover:scale-110 hover:shadow-lg
+                 active:scale-95 hover:bg-blue-400 text-gray-400 hover:text-white"
+      aria-label={social.label}
+    >
+      {social.icon}
+    </a>
+  ))}
+</div>
           </div>
 
           {/* ── SERVICES ── */}
@@ -145,18 +156,18 @@ export default function Footer() {
           </div>
 
           {/* ── CONTACT ── */}
-          <div>
+          <div className="col-span-2 md:col-span-1">
             <h4
               className="text-[10px] font-black uppercase tracking-[0.25em] mb-5"
               style={{ color: 'var(--text-muted)' }}
             >
-              Contact
+              Contacts
             </h4>
             <ul className="space-y-4">
               <li>
                 <a
                   href="mailto:info@jnollycyber.com"
-                  className="flex items-start gap-3 text-sm transition-colors"
+                  className="flex items-start gap-3 text-sm transition-all hover:translate-x-1"
                   style={{ color: 'var(--text-secondary)' }}
                 >
                   <Mail size={15} className="mt-0.5 shrink-0" style={{ color: 'var(--accent-primary)' }} />
@@ -166,20 +177,20 @@ export default function Footer() {
               <li>
                 <a
                   href="tel:+254700000000"
-                  className="flex items-start gap-3 text-sm transition-colors"
+                  className="flex items-start gap-2 text-sm transition-all hover:translate-x-1"
                   style={{ color: 'var(--text-secondary)' }}
                 >
-                  <Phone size={15} className="mt-0.5 shrink-0" style={{ color: 'var(--accent-primary)' }} />
-                  <span>+254 700 000 000</span>
+                  <Phone size={15} className="mt-0.5 " style={{ color: 'var(--accent-primary)' }} />
+                  <span>+254704 345 035</span>
                 </a>
               </li>
               <li>
                 <div
-                  className="flex items-start gap-3 text-sm"
+                  className="flex items-start gap-3 text-sm transition-all hover:translate-x-1"
                   style={{ color: 'var(--text-secondary)' }}
                 >
                   <MapPin size={15} className="mt-0.5 shrink-0" style={{ color: 'var(--accent-primary)' }} />
-                  <span>Eldoret Town, Kenya<br />Open Mon–Sat: 8am–7pm</span>
+                  <span>Eldoret Town, Kenya<br />Open: 24/7</span>
                 </div>
               </li>
             </ul>

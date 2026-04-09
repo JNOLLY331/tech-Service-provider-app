@@ -13,13 +13,14 @@ import {
 import { Link } from 'react-router-dom';
 import ProductCard from '../components/shop/ProductCard';
 import api from '../api/axios';
+import PureCounter from '@srexi/purecounterjs';
 
 /* ─── HERO SLIDES ───────────────────────────────────────────── */
 const HERO_SLIDES = [
   {
     tag: "🔥 Now Available",
     title: "Elite Cyber\nSolutions.",
-    subtitle: "Professional tech services for modern businesses in Eldoret — delivered fast, built to last.",
+    subtitle: "Professional tech services for modern businesses and individuals — delivered fast, built to last.",
     cta: "Browse Services",
     ctaPath: "/",
     accent: "#5b5bff",
@@ -88,7 +89,7 @@ const SERVICES = [
   },
   {
     icon: <Code2 size={28} />,
-    title: "E-Portfolio",
+    title: "E-Portfolio (online Visibity(",
     desc: "Professional digital portfolio that showcases your skills and impresses employers.",
     price: "From KES 2,500",
     color: '#10d99a',
@@ -96,7 +97,7 @@ const SERVICES = [
   {
     icon: <Wifi size={28} />,
     title: "Cyber Services",
-    desc: "Printing, scanning, data recovery, and full cyber café support services.",
+    desc: "Printing, scanning,KRA & Helb services, data recovery, and full cyber café support services.",
     price: "From KES 50",
     color: '#ffb547',
   },
@@ -109,7 +110,7 @@ const SERVICES = [
   },
   {
     icon: <Zap size={28} />,
-    title: "Tech Consulting",
+    title: "Tech courses & Consultancy ie computer science",
     desc: "Not sure what tech you need? Our experts will advise and guide you.",
     price: "Free",
     color: '#06b6d4',
@@ -118,28 +119,28 @@ const SERVICES = [
 
 /* ─── STATS ─────────────────────────────────────────────────── */
 const STATS = [
-  { value: '500+', label: 'Happy Clients', icon: <Users size={18} /> },
-  { value: '1,200+', label: 'Services Delivered', icon: <Package size={18} /> },
-  { value: '5★', label: 'Average Rating', icon: <Star size={18} /> },
-  { value: '3 Yrs', label: 'In Business', icon: <Award size={18} /> },
+  { end: 50, suffix: '+', label: 'Happy Clients', icon: <Users size={18} /> },
+  { end: 20, suffix: '+', label: 'Services Delivered', icon: <Package size={18} /> },
+  { end: 5, suffix: '★', label: 'Average Rating', icon: <Star size={18} /> },
+  { end: 2, suffix: ' Yrs', label: 'In Business', icon: <Award size={18} /> },
 ];
 
 /* ─── TESTIMONIALS ──────────────────────────────────────────── */
 const TESTIMONIALS = [
   {
-    name: "David Ochieng",
+    name: "David enshen",
     role: "Student, Masinde Muliro",
     text: "Got my e-portfolio done in one day! Jnolly Cyber Works understands exactly what students and graduates need.",
     rating: 5,
   },
   {
-    name: "Mama Sarah Enterprises",
+    name: "Elite Enterprises",
     role: "Business Owner, Eldoret",
     text: "They installed Office and set up my laptop. Very professional, affordable and fast. Highly recommend!",
     rating: 5,
   },
   {
-    name: "James Wafula",
+    name: "James Watt",
     role: "Freelancer",
     text: "Built me a website in 3 days. Clean design, mobile friendly, and they keep answering my questions even after delivery.",
     rating: 5,
@@ -161,6 +162,12 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Initialize PureCounter
+  useEffect(() => {
+    new PureCounter();
+  }, []);
+
+  // Fetch Products
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -179,15 +186,13 @@ export default function Home() {
   return (
     <div style={{ backgroundColor: 'var(--bg-base)' }}>
 
-      {/* ══════════════════════════════════════════
-          HERO SECTION
-      ══════════════════════════════════════════ */}
+      {/* HERO SECTION */}
       <section className="relative px-4 md:px-6 py-6">
         <Swiper
           modules={[Autoplay, Pagination, EffectFade]}
           effect="fade"
           pagination={{ clickable: true }}
-          autoplay={{ delay: 5500, disableOnInteraction: false }}
+          autoplay={{ delay: 2000, disableOnInteraction: false }}
           loop
           className="rounded-[2rem] overflow-hidden"
           style={{ height: 'clamp(400px, 60vh, 580px)' }}
@@ -198,7 +203,6 @@ export default function Home() {
                 className="w-full h-full flex items-center relative overflow-hidden"
                 style={{ background: 'var(--gradient-hero)' }}
               >
-                {/* Animated blobs */}
                 <div
                   className="absolute -top-24 -right-24 w-96 h-96 rounded-full blur-3xl animate-glow-pulse pointer-events-none"
                   style={{ background: `${slide.accent}18` }}
@@ -207,7 +211,6 @@ export default function Home() {
                   className="absolute -bottom-24 -left-12 w-72 h-72 rounded-full blur-3xl pointer-events-none"
                   style={{ background: `${slide.accent}10` }}
                 />
-                {/* Grid pattern overlay */}
                 <div
                   className="absolute inset-0 pointer-events-none opacity-[0.03]"
                   style={{
@@ -266,7 +269,6 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Floating badge */}
                 <div
                   className="absolute bottom-8 right-8 hidden md:flex items-center gap-3 px-4 py-3 rounded-2xl backdrop-blur-md animate-float"
                   style={{
@@ -276,8 +278,8 @@ export default function Home() {
                 >
                   <TrendingUp size={18} style={{ color: slide.accent }} />
                   <div>
-                    <p className="text-xs font-black" style={{ color: 'var(--text-primary)' }}>500+ Clients</p>
-                    <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Served in Eldoret</p>
+                    <p className="text-xs font-black" style={{ color: 'var(--text-primary)' }}>50+ Clients</p>
+                    <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Satisfied by Jnolly cyberworks</p>
                   </div>
                 </div>
               </div>
@@ -286,9 +288,7 @@ export default function Home() {
         </Swiper>
       </section>
 
-      {/* ══════════════════════════════════════════
-          STATS STRIP
-      ══════════════════════════════════════════ */}
+      {/* STATS STRIP WITH PURECOUNTER */}
       <section className="max-w-7xl mx-auto px-6 py-12">
         <div
           className="grid grid-cols-2 md:grid-cols-4 gap-px overflow-hidden rounded-2xl"
@@ -310,7 +310,14 @@ export default function Home() {
                 className="text-3xl font-black"
                 style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}
               >
-                {stat.value}
+                <span 
+                  className="purecounter"
+                  data-purecounter-start="0"
+                  data-purecounter-end={stat.end}
+                  data-purecounter-duration="2"
+                  data-purecounter-separator=","
+                ></span>
+                {stat.suffix}
               </p>
               <p className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>
                 {stat.label}
@@ -320,9 +327,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════
-          FEATURES STRIP
-      ══════════════════════════════════════════ */}
+      {/* FEATURES STRIP */}
       <section className="max-w-7xl mx-auto px-6 pb-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {FEATURES.map((f, i) => (
           <div
@@ -356,9 +361,7 @@ export default function Home() {
         ))}
       </section>
 
-      {/* ══════════════════════════════════════════
-          SERVICES CATALOG
-      ══════════════════════════════════════════ */}
+      {/* SERVICES CATALOG */}
       <section className="max-w-7xl mx-auto px-6 py-20">
         <div className="text-center mb-16">
           <p className="section-label mb-3">What We Offer</p>
@@ -423,9 +426,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════
-          LIVE PRODUCT GRID
-      ══════════════════════════════════════════ */}
+      {/* LIVE PRODUCT GRID */}
       <section
         className="py-20"
         style={{ background: 'var(--bg-surface)' }}
@@ -474,8 +475,8 @@ export default function Home() {
             >
               <p className="font-bold text-sm" style={{ color: 'var(--red)' }}>{error}</p>
               <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
-                Ensure the Django backend is running on port 8000.
-              </p>
+               kindly contact system administrator to fix the issue (+254704345035).
+                 </p>
             </div>
           ) : products.length === 0 ? (
             <div className="text-center py-24">
@@ -495,13 +496,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════
-          WHY CHOOSE US + TESTIMONIALS
-      ══════════════════════════════════════════ */}
+      {/* WHY CHOOSE US + TESTIMONIALS */}
       <section className="max-w-7xl mx-auto px-6 py-20">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
-          {/* Why Choose Us */}
           <div>
             <p className="section-label mb-3">Why Jnolly?</p>
             <h2
@@ -524,22 +522,15 @@ export default function Home() {
               ))}
             </ul>
             <div className="flex gap-4 mt-10">
-              <Link
-                to="/login"
-                className="btn-primary"
-              >
+              <Link to="/login" className="btn-primary">
                 Get Started <ArrowRight size={16} />
               </Link>
-              <a
-                href="tel:+254700000000"
-                className="btn-ghost"
-              >
+              <a href="tel:+254700000000" className="btn-ghost">
                 Call Us
               </a>
             </div>
           </div>
 
-          {/* Testimonials */}
           <div className="space-y-4">
             {TESTIMONIALS.map((t, i) => (
               <div
@@ -577,9 +568,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════
-          BOTTOM CTA BANNER
-      ══════════════════════════════════════════ */}
+      {/* BOTTOM CTA BANNER */}
       <section className="px-6 py-6 mb-6">
         <div
           className="max-w-7xl mx-auto rounded-3xl relative overflow-hidden p-12 md:p-20 text-center"
@@ -587,7 +576,6 @@ export default function Home() {
             background: 'linear-gradient(135deg, var(--accent-primary) 0%, #a78bfa 50%, #7c7cff 100%)',
           }}
         >
-          {/* Grid overlay */}
           <div
             className="absolute inset-0 pointer-events-none opacity-10"
             style={{
@@ -604,7 +592,7 @@ export default function Home() {
               Ready to Level Up?
             </h2>
             <p className="text-white/75 text-base max-w-md mx-auto mb-10 font-medium">
-              Join 500+ clients in Eldoret who trust Jnolly Cyber Works for their tech needs.
+              Join 20+ clients in Eldoret who trust Jnolly Cyber Works for their tech needs.
             </p>
             <div className="flex flex-wrap gap-4 justify-center">
               <Link
