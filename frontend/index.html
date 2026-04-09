@@ -1,13 +1,32 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
+    <meta name="description" content="Jnolly Cyber Works — Elite tech services in Eldoret: software installations, web design, e-portfolios & cyber solutions." />
+    <meta name="keywords" content="cyber works, software installation, web design, e-portfolio, tech services, Eldoret Kenya" />
+    <meta property="og:title" content="Jnolly Cyber Works — Tech Services Platform" />
+    <meta property="og:description" content="Professional tech services for modern businesses. Order online with M-Pesa." />
+    <title>Jnolly Cyber Works | Elite Tech Services</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <script>
+      // Inject saved theme before React boots to prevent flash
+      (function () {
+        try {
+          const stored = JSON.parse(localStorage.getItem('jnolly-theme'));
+          const t = stored?.state?.theme || 'dark';
+          document.documentElement.setAttribute('data-theme', t);
+        } catch {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      })();
+    </script>
   </head>
   <body>
-    <div id="root"></div>
+        <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

@@ -2,16 +2,20 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   Trash2, ShoppingBag, Plus, Minus, ArrowRight,
-  CreditCard, User, MapPin, RefreshCw, AlertCircle,
-  Smartphone, CheckCircle2, Loader2
+  MapPin, RefreshCw, AlertCircle,
+  Smartphone, CheckCircle2, Loader2, Package,
+  ShieldCheck, Lock
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../api/axios';
 import { useCart } from '../store/useCart';
 import { useAuth } from '../store/useAuth';
 
-// Step indicators
-const STEPS = ['Cart Review', 'Shipping Info', 'Payment'];
+const STEPS = [
+  { label: 'Cart', icon: <ShoppingBag size={14} /> },
+  { label: 'Shipping', icon: <MapPin size={14} /> },
+  { label: 'Payment', icon: <Smartphone size={14} /> },
+];
 
 export default function Cart() {
   const { cart = [], removeFromCart, updateQuantity, clearCart } = useCart();
@@ -32,322 +36,488 @@ export default function Cart() {
 
   const [phone, setPhone] = useState('');
 
-  const subtotal = cart.reduce((acc, item) => acc + (parseFloat(item.price) * item.quantity), 0);
+  const subtotal = cart.reduce(
+    (acc, item) => acc + parseFloat(item.price) * item.quantity,
+    0
+  );
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
 
-  // ── Step 1: Place Order ──────────────────────────────────────────────────
+  /* ── Place Order ── */
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
     if (isProcessing) return;
     setIsProcessing(true);
-    const t = toast.loading("Placing order...");
-
+    const t = toast.loading('Placing your order...');
     try {
       const payload = {
         ...formData,
-        items_data: cart.map(item => ({
-          product_id: item.id,
-          quantity: item.quantity,
-        })),
+        items_data: cart.map((item) => ({ product_id: item.id, quantity: item.quantity })),
       };
-
       const { data, status } = await api.post('orders/', payload);
-
       if (status === 201) {
         setOrderId(data.id);
-        toast.success("Order placed! Proceed to payment.", { id: t });
-        setStep(2); // jump to payment step
+        toast.success('Order placed! Proceed to payment.', { id: t });
+        setStep(2);
       }
     } catch (err) {
-      console.error("Order error:", err.response?.data);
       const errData = err.response?.data;
-      const msg = typeof errData === 'string'
-        ? errData
-        : (errData?.detail || Object.values(errData || {}).flat().join(' ') || "Order failed.");
+      const msg =
+        typeof errData === 'string'
+          ? errData
+          : errData?.detail || Object.values(errData || {}).flat().join(' ') || 'Order failed.';
       toast.error(msg, { id: t });
     } finally {
       setIsProcessing(false);
     }
   };
 
-  // ── Step 2: M-Pesa STK Push ──────────────────────────────────────────────
+  /* ── M-Pesa ── */
   const handleMpesaPay = async (e) => {
     e.preventDefault();
-    if (!phone) { toast.error("Enter your M-Pesa number."); return; }
-    if (!orderId) { toast.error("No order found. Please restart."); return; }
+    if (!phone) { toast.error('Enter your M-Pesa number.'); return; }
+    if (!orderId) { toast.error('No order found. Please restart.'); return; }
     setIsProcessing(true);
-    const t = toast.loading("Sending STK Push to your phone...");
-
+    const t = toast.loading('Sending STK Push...');
     try {
-      const { data } = await api.post('payments/stk-push/', {
-        order_id: orderId,
-        phone_number: phone,
-      });
-      toast.success("Check your phone for the M-Pesa prompt!", { id: t });
+      await api.post('payments/stk-push/', { order_id: orderId, phone_number: phone });
+      toast.success('Check your phone for the M-Pesa prompt!', { id: t });
       clearCart();
       navigate(`/order-success/${orderId}`);
     } catch (err) {
-      const msg = err.response?.data?.error || "Payment initiation failed.";
-      toast.error(msg, { id: t });
+      toast.error(err.response?.data?.error || 'Payment failed.', { id: t });
     } finally {
       setIsProcessing(false);
     }
   };
 
-  // ── Empty State ──────────────────────────────────────────────────────────
+  /* ── Empty State ── */
   if (cart.length === 0 && step === 0) {
     return (
-      <div className="min-h-[80vh] flex flex-col items-center justify-center p-6 text-center">
-        <div className="w-24 h-24 bg-zinc-50 rounded-[2.5rem] flex items-center justify-center mb-8 border border-zinc-100 shadow-inner">
-          <ShoppingBag size={40} className="text-zinc-200" />
+      <div
+        className="min-h-[80vh] flex flex-col items-center justify-center p-8 text-center"
+        style={{ backgroundColor: 'var(--bg-base)' }}
+      >
+        <div
+          className="w-24 h-24 rounded-3xl flex items-center justify-center mb-8"
+          style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)' }}
+        >
+          <Package size={44} style={{ color: 'var(--text-muted)' }} />
         </div>
-        <h2 className="text-3xl font-black text-zinc-900 uppercase tracking-tighter mb-4">Cart is Empty</h2>
-        <p className="text-zinc-400 text-sm mb-10">Add some products from our store to get started.</p>
-        <Link to="/" className="bg-zinc-950 text-white px-12 py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] hover:bg-blue-600 transition-all shadow-xl shadow-zinc-200">
-          Browse Store
+        <h2
+          className="text-3xl font-black mb-3"
+          style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}
+        >
+          Cart is Empty
+        </h2>
+        <p className="text-sm mb-10 max-w-xs" style={{ color: 'var(--text-secondary)' }}>
+          Browse our services and add what you need to get started.
+        </p>
+        <Link to="/" className="btn-primary">
+          <ShoppingBag size={16} /> Browse Services
         </Link>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12 lg:py-24 font-sans">
-      {/* Header */}
-      <div className="mb-12 border-b border-zinc-100 pb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <h1 className="text-6xl font-black tracking-tighter text-zinc-900 uppercase leading-none">
-            Checkout<span className="text-blue-600">.</span>
-          </h1>
-          <p className="text-zinc-400 text-[10px] font-black uppercase tracking-[0.4em] mt-4">
-            Step {step + 1} of {STEPS.length}: {STEPS[step]}
-          </p>
-        </div>
-        {step === 0 && (
-          <button
-            type="button"
-            onClick={() => { clearCart(); toast.success("Cart cleared."); }}
-            className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-red-500 hover:bg-red-50 px-6 py-3 rounded-xl transition-all border border-red-100"
-          >
-            <RefreshCw size={14} /> Clear Cart
-          </button>
-        )}
-      </div>
+    <div
+      className="min-h-screen"
+      style={{ backgroundColor: 'var(--bg-base)' }}
+    >
+      <div className="max-w-7xl mx-auto px-6 py-12 lg:py-20">
 
-      {/* Step Progress Bar */}
-      <div className="flex items-center gap-2 mb-14">
-        {STEPS.map((s, i) => (
-          <div key={i} className="flex items-center gap-2 flex-1">
-            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black transition-all ${i < step ? 'bg-emerald-500 text-white' : i === step ? 'bg-blue-600 text-white' : 'bg-zinc-100 text-zinc-400'
-              }`}>
-              {i < step ? <CheckCircle2 size={14} /> : i + 1}
-            </div>
-            <span className={`text-[10px] font-black uppercase tracking-widest hidden sm:block ${i === step ? 'text-zinc-900' : 'text-zinc-300'}`}>
-              {s}
-            </span>
-            {i < STEPS.length - 1 && <div className={`flex-1 h-px ${i < step ? 'bg-emerald-300' : 'bg-zinc-100'}`} />}
+        {/* ── HEADER ── */}
+        <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div>
+            <p className="section-label mb-2">Checkout</p>
+            <h1
+              className="text-5xl font-black tracking-tight"
+              style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}
+            >
+              Your Cart<span style={{ color: 'var(--accent-primary)' }}>.</span>
+            </h1>
           </div>
-        ))}
-      </div>
+          {step === 0 && cart.length > 0 && (
+            <button
+              onClick={() => { clearCart(); toast.success('Cart cleared.'); }}
+              className="btn-danger self-start"
+            >
+              <RefreshCw size={14} /> Clear Cart
+            </button>
+          )}
+        </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
-        {/* ── LEFT CONTENT ── */}
-        <div className="lg:col-span-8 space-y-10">
+        {/* ── STEP PROGRESS ── */}
+        <div className="flex items-center gap-3 mb-12">
+          {STEPS.map((s, i) => (
+            <div key={i} className="flex items-center gap-2 flex-1 min-w-0">
+              <div
+                className="w-9 h-9 rounded-xl flex items-center justify-center text-xs font-black shrink-0 transition-all"
+                style={
+                  i < step
+                    ? { background: 'var(--emerald-bg)', color: 'var(--emerald)', border: '1px solid rgba(16,217,154,0.3)' }
+                    : i === step
+                      ? { background: 'var(--accent-primary)', color: '#fff', boxShadow: '0 4px 16px var(--accent-glow)' }
+                      : { background: 'var(--bg-elevated)', color: 'var(--text-muted)', border: '1px solid var(--border-subtle)' }
+                }
+              >
+                {i < step ? <CheckCircle2 size={16} /> : s.icon}
+              </div>
+              <span
+                className="text-xs font-bold uppercase tracking-wider hidden sm:block truncate"
+                style={{ color: i === step ? 'var(--text-primary)' : 'var(--text-muted)' }}
+              >
+                {s.label}
+              </span>
+              {i < STEPS.length - 1 && (
+                <div
+                  className="flex-1 h-px mx-2"
+                  style={{ background: i < step ? 'var(--emerald)' : 'var(--border-subtle)' }}
+                />
+              )}
+            </div>
+          ))}
+        </div>
 
-          {/* STEP 0: Cart Items */}
-          {step === 0 && (
-            <div className="space-y-4">
-              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 px-4">Your Items ({cart.length})</p>
-              {cart.map((item) => (
-                <div key={item.id} className="bg-white p-6 rounded-[2rem] border border-zinc-100 flex items-center gap-6 group hover:shadow-xl hover:shadow-zinc-100 transition-all">
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-20 h-20 rounded-3xl object-cover bg-zinc-50 grayscale group-hover:grayscale-0 transition-all duration-500"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-black text-zinc-900 text-sm uppercase tracking-tight truncate">{item.name}</h4>
-                    <p className="text-xs text-blue-600 font-bold mt-1">
-                      KES {parseFloat(item.price).toLocaleString()} × {item.quantity}
-                    </p>
-                    <p className="text-xs font-black text-zinc-400 mt-1">
-                      = KES {(parseFloat(item.price) * item.quantity).toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center bg-zinc-50 rounded-2xl p-1.5 border border-zinc-100">
-                      <button
-                        type="button"
-                        onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
-                        className="p-2 text-zinc-400 hover:text-zinc-900 rounded-xl hover:bg-white transition"
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+
+          {/* ── LEFT ── */}
+          <div className="lg:col-span-8 space-y-6">
+
+            {/* STEP 0: Cart Items */}
+            {step === 0 && (
+              <div className="space-y-4">
+                <p
+                  className="text-xs font-black uppercase tracking-widest px-2"
+                  style={{ color: 'var(--text-muted)' }}
+                >
+                  {cart.length} item{cart.length !== 1 && 's'}
+                </p>
+
+                {cart.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center gap-4 md:gap-6 p-5 rounded-2xl transition-all"
+                    style={{
+                      background: 'var(--bg-card)',
+                      border: '1px solid var(--border-subtle)',
+                    }}
+                  >
+                    <div
+                      className="w-16 h-16 rounded-xl overflow-hidden shrink-0"
+                      style={{ background: 'var(--bg-elevated)' }}
+                    >
+                      {item.image ? (
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Package size={24} style={{ color: 'var(--text-muted)' }} />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <h4
+                        className="font-bold text-sm truncate mb-0.5"
+                        style={{ color: 'var(--text-primary)' }}
                       >
-                        <Minus size={12} />
-                      </button>
-                      <span className="w-8 text-center text-xs font-black">{item.quantity}</span>
-                      <button
-                        type="button"
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="p-2 text-zinc-400 hover:text-zinc-900 rounded-xl hover:bg-white transition"
+                        {item.name}
+                      </h4>
+                      <p className="text-xs font-bold" style={{ color: 'var(--accent-primary)' }}>
+                        KES {parseFloat(item.price).toLocaleString()} × {item.quantity}
+                      </p>
+                      <p className="text-xs font-black" style={{ color: 'var(--text-secondary)' }}>
+                        = KES {(parseFloat(item.price) * item.quantity).toLocaleString()}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      {/* Qty stepper */}
+                      <div
+                        className="flex items-center rounded-xl p-1"
+                        style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)' }}
                       >
-                        <Plus size={12} />
+                        <button
+                          onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
+                          className="w-7 h-7 rounded-lg flex items-center justify-center transition-all"
+                          style={{ color: 'var(--text-secondary)' }}
+                        >
+                          <Minus size={12} />
+                        </button>
+                        <span
+                          className="w-8 text-center text-xs font-black"
+                          style={{ color: 'var(--text-primary)' }}
+                        >
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          className="w-7 h-7 rounded-lg flex items-center justify-center transition-all"
+                          style={{ color: 'var(--text-secondary)' }}
+                        >
+                          <Plus size={12} />
+                        </button>
+                      </div>
+
+                      <button
+                        onClick={() => removeFromCart(item.id)}
+                        className="w-9 h-9 rounded-xl flex items-center justify-center transition-all"
+                        style={{
+                          background: 'var(--red-bg)',
+                          color: 'var(--red)',
+                          border: '1px solid rgba(255,77,106,0.15)',
+                        }}
+                      >
+                        <Trash2 size={15} />
                       </button>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => removeFromCart(item.id)}
-                      className="text-zinc-200 hover:text-red-500 transition-colors p-2"
-                    >
-                      <Trash2 size={18} />
-                    </button>
                   </div>
-                </div>
-              ))}
+                ))}
 
-              <button
-                onClick={() => setStep(1)}
-                className="w-full mt-4 bg-zinc-950 text-white py-5 rounded-2xl font-black uppercase tracking-widest text-sm flex items-center justify-center gap-3 hover:bg-blue-600 transition-all"
-              >
-                Continue to Shipping <ArrowRight size={18} />
-              </button>
-            </div>
-          )}
-
-          {/* STEP 1: Shipping Form */}
-          {step === 1 && (
-            <form onSubmit={handlePlaceOrder} className="space-y-6">
-              <div className="bg-zinc-50 p-10 rounded-[3rem] border border-zinc-100">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] mb-8 flex items-center gap-3 text-zinc-400">
-                  <MapPin size={16} className="text-blue-600" /> Shipping Details
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-black uppercase text-zinc-400 ml-1">First Name *</label>
-                    <input required name="first_name" placeholder="John" value={formData.first_name} onChange={handleInputChange}
-                      className="w-full bg-white p-5 rounded-2xl border border-zinc-200 text-xs font-bold outline-none focus:ring-2 focus:ring-blue-600 transition-all" />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-black uppercase text-zinc-400 ml-1">Last Name *</label>
-                    <input required name="last_name" placeholder="Doe" value={formData.last_name} onChange={handleInputChange}
-                      className="w-full bg-white p-5 rounded-2xl border border-zinc-200 text-xs font-bold outline-none focus:ring-2 focus:ring-blue-600 transition-all" />
-                  </div>
-                  <div className="space-y-1 md:col-span-2">
-                    <label className="text-[9px] font-black uppercase text-zinc-400 ml-1">Email *</label>
-                    <input required name="email" type="email" placeholder="you@email.com" value={formData.email} onChange={handleInputChange}
-                      className="w-full bg-white p-5 rounded-2xl border border-zinc-200 text-xs font-bold outline-none focus:ring-2 focus:ring-blue-600 transition-all" />
-                  </div>
-                  <div className="space-y-1 md:col-span-2">
-                    <label className="text-[9px] font-black uppercase text-zinc-400 ml-1">Street Address *</label>
-                    <input required name="address" placeholder="123 Main St, Apt 4" value={formData.address} onChange={handleInputChange}
-                      className="w-full bg-white p-5 rounded-2xl border border-zinc-200 text-xs font-bold outline-none focus:ring-2 focus:ring-blue-600 transition-all" />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-black uppercase text-zinc-400 ml-1">City *</label>
-                    <input required name="city" placeholder="Nairobi" value={formData.city} onChange={handleInputChange}
-                      className="w-full bg-white p-5 rounded-2xl border border-zinc-200 text-xs font-bold outline-none focus:ring-2 focus:ring-blue-600 transition-all" />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-black uppercase text-zinc-400 ml-1">Postal Code *</label>
-                    <input required name="postal_code" placeholder="00100" value={formData.postal_code} onChange={handleInputChange}
-                      className="w-full bg-white p-5 rounded-2xl border border-zinc-200 text-xs font-bold outline-none focus:ring-2 focus:ring-blue-600 transition-all" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-4">
-                <button type="button" onClick={() => setStep(0)} className="px-8 py-5 rounded-2xl border border-zinc-200 font-black text-xs uppercase tracking-widest text-zinc-500 hover:bg-zinc-50 transition">
-                  ← Back
+                <button
+                  onClick={() => setStep(1)}
+                  className="btn-primary w-full py-4"
+                  style={{ borderRadius: '1rem', fontSize: '0.875rem' }}
+                >
+                  Continue to Shipping <ArrowRight size={18} />
                 </button>
+              </div>
+            )}
+
+            {/* STEP 1: Shipping Form */}
+            {step === 1 && (
+              <form onSubmit={handlePlaceOrder} className="space-y-6">
+                <div
+                  className="p-8 rounded-2xl"
+                  style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}
+                >
+                  <h3
+                    className="text-sm font-black uppercase tracking-widest mb-6 flex items-center gap-3"
+                    style={{ color: 'var(--text-secondary)' }}
+                  >
+                    <MapPin size={16} style={{ color: 'var(--accent-primary)' }} />
+                    Shipping Details
+                  </h3>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {[
+                      { name: 'first_name', label: 'First Name', placeholder: 'John', col: '' },
+                      { name: 'last_name', label: 'Last Name', placeholder: 'Doe', col: '' },
+                      { name: 'email', label: 'Email', placeholder: 'you@email.com', type: 'email', col: 'md:col-span-2' },
+                      { name: 'address', label: 'Street Address', placeholder: '123 Main Street', col: 'md:col-span-2' },
+                      { name: 'city', label: 'City', placeholder: 'Nairobi', col: '' },
+                      { name: 'postal_code', label: 'Postal Code', placeholder: '00100', col: '' },
+                    ].map((f) => (
+                      <div key={f.name} className={`space-y-1 ${f.col}`}>
+                        <label
+                          className="text-[10px] font-black uppercase tracking-wider ml-1"
+                          style={{ color: 'var(--text-muted)' }}
+                        >
+                          {f.label} *
+                        </label>
+                        <input
+                          required
+                          name={f.name}
+                          type={f.type || 'text'}
+                          placeholder={f.placeholder}
+                          value={formData[f.name]}
+                          onChange={handleInputChange}
+                          className="form-input"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setStep(0)}
+                    className="btn-ghost px-6"
+                  >
+                    ← Back
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isProcessing}
+                    className="btn-primary flex-1 py-4"
+                    style={{ borderRadius: '1rem' }}
+                  >
+                    {isProcessing
+                      ? <Loader2 className="animate-spin" size={18} />
+                      : <>Place Order <ArrowRight size={18} /></>
+                    }
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* STEP 2: M-Pesa */}
+            {step === 2 && (
+              <form onSubmit={handleMpesaPay} className="space-y-6">
+                {/* Order Confirmation Banner */}
+                <div
+                  className="p-5 rounded-2xl flex items-start gap-4"
+                  style={{
+                    background: 'var(--emerald-bg)',
+                    border: '1px solid rgba(16,217,154,0.2)',
+                  }}
+                >
+                  <CheckCircle2 size={20} style={{ color: 'var(--emerald)', flexShrink: 0, marginTop: '2px' }} />
+                  <div>
+                    <p className="font-black text-xs uppercase tracking-widest" style={{ color: 'var(--emerald)' }}>
+                      Order Placed Successfully!
+                    </p>
+                    <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>
+                      Order #{String(orderId).padStart(5, '0')} is confirmed. Now complete payment.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Phone Input */}
+                <div
+                  className="p-8 rounded-2xl"
+                  style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}
+                >
+                  <h3
+                    className="text-sm font-black uppercase tracking-widest mb-6 flex items-center gap-3"
+                    style={{ color: 'var(--text-secondary)' }}
+                  >
+                    <Smartphone size={16} style={{ color: 'var(--accent-primary)' }} />
+                    M-Pesa STK Push
+                  </h3>
+                  <div className="space-y-2">
+                    <label
+                      className="text-[10px] font-black uppercase tracking-wider ml-1"
+                      style={{ color: 'var(--text-muted)' }}
+                    >
+                      M-Pesa Phone Number *
+                    </label>
+                    <input
+                      required
+                      type="tel"
+                      placeholder="0712345678 or +254712345678"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="form-input"
+                    />
+                    <p className="text-xs mt-2 ml-1" style={{ color: 'var(--text-muted)' }}>
+                      You'll receive an M-Pesa prompt to pay KES {subtotal.toLocaleString()}.
+                    </p>
+                  </div>
+                </div>
+
                 <button
                   type="submit"
                   disabled={isProcessing}
-                  className="flex-1 bg-zinc-950 text-white py-5 rounded-2xl font-black uppercase tracking-widest text-sm flex items-center justify-center gap-3 hover:bg-blue-600 transition-all disabled:opacity-60"
+                  className="w-full py-5 rounded-2xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-3 transition-all"
+                  style={{
+                    background: 'var(--emerald)',
+                    color: '#fff',
+                    boxShadow: '0 8px 32px rgba(16,217,154,0.25)',
+                    opacity: isProcessing ? 0.6 : 1,
+                  }}
                 >
-                  {isProcessing ? <Loader2 className="animate-spin" size={18} /> : <>Place Order <ArrowRight size={18} /></>}
+                  {isProcessing
+                    ? <Loader2 className="animate-spin" size={18} />
+                    : <><Smartphone size={20} /> Pay KES {subtotal.toLocaleString()} via M-Pesa</>
+                  }
                 </button>
-              </div>
-            </form>
-          )}
 
-          {/* STEP 2: M-Pesa Payment */}
-          {step === 2 && (
-            <form onSubmit={handleMpesaPay} className="space-y-6">
-              <div className="bg-emerald-50 border border-emerald-100 rounded-3xl p-6 flex items-start gap-4">
-                <CheckCircle2 size={20} className="text-emerald-500 shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-black text-xs text-emerald-700 uppercase tracking-widest">Order Placed!</p>
-                  <p className="text-xs text-emerald-600 font-medium mt-1">Order #{String(orderId).padStart(5, '0')} created. Now complete your M-Pesa payment.</p>
+                <button
+                  type="button"
+                  onClick={() => { clearCart(); navigate(`/order-success/${orderId}`); }}
+                  className="w-full text-center text-xs font-bold py-3 transition-colors"
+                  style={{ color: 'var(--text-muted)' }}
+                >
+                  Skip — I'll pay later
+                </button>
+              </form>
+            )}
+          </div>
+
+          {/* ── ORDER SUMMARY ── */}
+          <div className="lg:col-span-4">
+            <div
+              className="sticky top-28 rounded-2xl overflow-hidden"
+              style={{
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border-subtle)',
+              }}
+            >
+              {/* Header */}
+              <div
+                className="px-6 py-5"
+                style={{
+                  background: 'var(--accent-primary)',
+                  backgroundImage: 'linear-gradient(135deg, var(--accent-primary) 0%, #a78bfa 100%)',
+                }}
+              >
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/70 mb-1">
+                  Order Summary
+                </p>
+                <p className="text-2xl font-black text-white">
+                  KES {subtotal.toLocaleString()}
+                </p>
+              </div>
+
+              {/* Items */}
+              <div className="p-6 space-y-4">
+                {cart.map((item) => (
+                  <div key={item.id} className="flex justify-between items-start gap-3 text-xs">
+                    <span
+                      className="truncate flex-1"
+                      style={{ color: 'var(--text-secondary)' }}
+                    >
+                      {item.name} ×{item.quantity}
+                    </span>
+                    <span className="font-bold shrink-0" style={{ color: 'var(--text-primary)' }}>
+                      KES {(parseFloat(item.price) * item.quantity).toLocaleString()}
+                    </span>
+                  </div>
+                ))}
+
+                <div
+                  className="pt-4 mt-4"
+                  style={{ borderTop: '1px solid var(--border-subtle)' }}
+                >
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+                      Total
+                    </span>
+                    <span
+                      className="text-2xl font-black"
+                      style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}
+                    >
+                      KES {subtotal.toLocaleString()}
+                    </span>
+                  </div>
                 </div>
-              </div>
 
-              <div className="bg-zinc-50 p-10 rounded-[3rem] border border-zinc-100">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] mb-8 flex items-center gap-3 text-zinc-400">
-                  <Smartphone size={16} className="text-blue-600" /> M-Pesa STK Push
-                </h3>
-                <div className="space-y-2">
-                  <label className="text-[9px] font-black uppercase text-zinc-400 ml-1">M-Pesa Phone Number *</label>
-                  <input
-                    required
-                    type="tel"
-                    placeholder="0712 345 678 or +254712345678"
-                    value={phone}
-                    onChange={e => setPhone(e.target.value)}
-                    className="w-full bg-white p-5 rounded-2xl border border-zinc-200 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-600 transition-all"
-                  />
-                  <p className="text-[9px] text-zinc-400 font-medium ml-1">
-                    You'll receive an M-Pesa prompt to pay KES {subtotal.toLocaleString()}.
+                {/* Info */}
+                <div
+                  className="flex items-start gap-3 p-4 rounded-xl mt-4"
+                  style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)' }}
+                >
+                  <Lock size={14} style={{ color: 'var(--accent-primary)', flexShrink: 0, marginTop: '2px' }} />
+                  <p className="text-[10px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                    Secure checkout. Payment via M-Pesa STK Push. Stock reserved upon order creation.
                   </p>
                 </div>
-              </div>
 
-              <button
-                type="submit"
-                disabled={isProcessing}
-                className="w-full bg-emerald-600 text-white py-6 rounded-2xl font-black uppercase tracking-widest text-sm flex items-center justify-center gap-3 hover:bg-emerald-700 transition-all disabled:opacity-60 shadow-xl shadow-emerald-100"
-              >
-                {isProcessing ? <Loader2 className="animate-spin" size={18} /> : (
-                  <><Smartphone size={20} /> Pay KES {subtotal.toLocaleString()} via M-Pesa</>
-                )}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => { clearCart(); navigate(`/order-success/${orderId}`); }}
-                className="w-full text-center text-xs text-zinc-400 hover:text-zinc-600 font-bold py-3 transition-colors"
-              >
-                Skip payment — I'll pay later
-              </button>
-            </form>
-          )}
-        </div>
-
-        {/* ── SUMMARY PANEL ── */}
-        <div className="lg:col-span-4 sticky top-32">
-          <div className="bg-zinc-950 p-10 rounded-[3.5rem] text-white shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)]">
-            <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.5em] mb-3">Order Summary</p>
-
-            <div className="space-y-3 mb-8">
-              {cart.map(item => (
-                <div key={item.id} className="flex justify-between text-xs">
-                  <span className="text-zinc-400 truncate flex-1 mr-4">{item.name} ×{item.quantity}</span>
-                  <span className="font-black text-white shrink-0">KES {(parseFloat(item.price) * item.quantity).toLocaleString()}</span>
+                <div className="flex items-center gap-2 justify-center mt-2">
+                  <ShieldCheck size={13} style={{ color: 'var(--emerald)' }} />
+                  <span className="text-[10px] font-bold" style={{ color: 'var(--emerald)' }}>
+                    Guaranteed satisfaction
+                  </span>
                 </div>
-              ))}
-            </div>
-
-            <div className="border-t border-white/10 pt-6 mb-8">
-              <div className="flex justify-between items-center">
-                <p className="text-zinc-400 text-xs font-bold uppercase tracking-widest">Total</p>
-                <p className="text-3xl font-black tracking-tighter">KES {subtotal.toLocaleString()}</p>
               </div>
-            </div>
-
-            <div className="flex gap-3 items-start">
-              <AlertCircle size={16} className="text-amber-500 shrink-0 mt-0.5" />
-              <p className="text-[9px] text-zinc-500 font-bold uppercase leading-relaxed tracking-wider">
-                Payment via M-Pesa STK push. Stock is reserved upon order creation.
-              </p>
             </div>
           </div>
         </div>

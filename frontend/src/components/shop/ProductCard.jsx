@@ -1,117 +1,181 @@
 import { Link } from 'react-router-dom';
-import { 
-  ShoppingBag, 
-  Database, 
-  AlertTriangle, 
-  CheckCircle, 
-  ShieldCheck,
-  ArrowUpRight 
+import {
+  ShoppingBag,
+  Database,
+  AlertTriangle,
+  CheckCircle,
+  ShieldOff,
+  ArrowUpRight,
 } from 'lucide-react';
-import { useCart } from "../../store/useCart";
+import { useCart } from '../../store/useCart';
 import toast from 'react-hot-toast';
+
+/**
+ * Returns the status badge config for a product.
+ */
+function getStatus(product) {
+  if (!product.is_available) {
+    return { label: 'Archived', badge: 'badge-muted', dot: '#5a5a7a' };
+  }
+  if (product.stock <= 0) {
+    return { label: 'Sold Out', badge: 'badge-danger', dot: 'var(--red)' };
+  }
+  if (product.stock <= 5) {
+    return { label: `Only ${product.stock} left`, badge: 'badge-warning', dot: 'var(--amber)' };
+  }
+  return { label: 'In Stock', badge: 'badge-success', dot: 'var(--emerald)' };
+}
+
+function StatusIcon({ badge }) {
+  if (badge === 'badge-success') return <CheckCircle size={10} />;
+  if (badge === 'badge-warning') return <Database size={10} />;
+  if (badge === 'badge-danger') return <AlertTriangle size={10} />;
+  return <ShieldOff size={10} />;
+}
 
 export default function ProductCard({ product }) {
   const { addToCart, cart } = useCart();
 
-  // 1. Calculate if the user already has the max available stock in their cart
-  const cartItem = cart.find(item => item.id === product.id);
-  const currentCartQty = cartItem ? cartItem.quantity : 0;
+  const cartItem = cart.find((item) => item.id === product.id);
+  const currentQty = cartItem ? cartItem.quantity : 0;
   const isOutOfStock = product.stock <= 0 || !product.is_available;
-  const isMaxedOut = currentCartQty >= product.stock;
+  const isMaxed = currentQty >= product.stock;
 
-  // 2. Dynamic Inventory Branding
-  const getStatus = () => {
-    if (!product.is_available) return { label: "ARCHIVED", css: "bg-zinc-100 text-zinc-400 border-zinc-200", icon: <ShieldCheck size={10}/> };
-    if (product.stock <= 0) return { label: "SOLD OUT", css: "bg-red-50 text-red-500 border-red-100", icon: <AlertTriangle size={10}/> };
-    if (product.stock <= 5) return { label: `LOW STOCK: ${product.stock}`, css: "bg-amber-50 text-amber-600 border-amber-100", icon: <Database size={10}/> };
-    return { label: "IN DEPOT", css: "bg-emerald-50 text-emerald-600 border-emerald-100", icon: <CheckCircle size={10}/> };
-  };
-
-  const status = getStatus();
+  const status = getStatus(product);
 
   const handleAddToCart = () => {
-    if (isMaxedOut) {
-      toast.error("MAXIMUM WAREHOUSE STOCK REACHED");
+    if (isMaxed) {
+      toast.error('Maximum stock reached.');
       return;
     }
     addToCart(product);
-    toast.success(`${product.name.toUpperCase()} SYNCED TO CART`);
+    toast.success(`${product.name} added to cart!`);
   };
 
   return (
-    <div className="group bg-white border border-zinc-100 rounded-[2.5rem] overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-zinc-200/50">
-      
-      {/* --- VISUAL VIEWPORT --- */}
-      <div className="relative aspect-[4/5] bg-zinc-50 overflow-hidden">
-        <img 
-          src={product.image} 
-          alt={product.name} 
-          className={`w-full h-full object-cover transition-all duration-700 group-hover:scale-110 
-            ${isOutOfStock ? 'grayscale opacity-40' : 'grayscale group-hover:grayscale-0'}`} 
-        />
+    <div
+      className="group flex flex-col h-full rounded-2xl overflow-hidden transition-all duration-400"
+      style={{
+        background: 'var(--bg-card)',
+        border: '1px solid var(--border-subtle)',
+      }}
+    >
+      {/* ── IMAGE ── */}
+      <div className="relative overflow-hidden" style={{ aspectRatio: '4/3' }}>
+        {product.image ? (
+          <img
+            src={product.image}
+            alt={product.name}
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+            style={{ filter: isOutOfStock ? 'grayscale(1) opacity(0.4)' : 'none' }}
+          />
+        ) : (
+          <div
+            className="w-full h-full flex items-center justify-center"
+            style={{ background: 'var(--bg-elevated)' }}
+          >
+            <ShoppingBag size={48} style={{ color: 'var(--border-default)' }} />
+          </div>
+        )}
 
-        {/* Floating Status Badge */}
-        <div className={`absolute top-5 left-5 px-3 py-1.5 rounded-full border text-[8px] font-black tracking-[0.2em] flex items-center gap-2 backdrop-blur-md transition-all ${status.css}`}>
-          {status.icon} {status.label}
+        {/* Status badge */}
+        <div className={`badge ${status.badge} absolute top-4 left-4 backdrop-blur-md`}>
+          <span
+            className="w-1.5 h-1.5 rounded-full inline-block"
+            style={{ background: status.dot }}
+          />
+          {status.label}
         </div>
 
-        {/* Detail Link Overlay */}
-        <Link 
-          to={`/product/${product.slug}`} 
-          className="absolute inset-0 flex items-center justify-center bg-zinc-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        {/* Quick view overlay */}
+        <Link
+          to={`/product/${product.slug}`}
+          className="absolute inset-0 flex items-end justify-end p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+          style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 60%)' }}
         >
-          <div className="bg-white p-4 rounded-full text-zinc-950 shadow-xl transform translate-y-4 group-hover:translate-y-0 transition-transform">
-            <ArrowUpRight size={20} />
+          <div
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white backdrop-blur-md transition-transform translate-y-2 group-hover:translate-y-0"
+            style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.25)' }}
+          >
+            View Details <ArrowUpRight size={14} />
           </div>
         </Link>
       </div>
 
-      {/* --- CONTENT PANEL --- */}
-      <div className="p-8">
-        <div className="flex justify-between items-start mb-6">
-          <div className="space-y-1">
-            <p className="text-[7px] font-black text-blue-600 uppercase tracking-[0.4em]">
-              {product.category_name || "LOGISTICS_UNIT"}
+      {/* ── CONTENT ── */}
+      <div className="flex flex-col flex-1 p-6">
+        <div className="flex-1">
+          <p
+            className="text-[10px] font-black uppercase tracking-[0.2em] mb-1"
+            style={{ color: 'var(--accent-primary)' }}
+          >
+            {product.category_name || 'Service'}
+          </p>
+          <h3
+            className="font-bold text-sm leading-snug mb-2"
+            style={{ color: 'var(--text-primary)' }}
+          >
+            {product.name}
+          </h3>
+          {product.description && (
+            <p
+              className="text-xs leading-relaxed line-clamp-2 mb-4"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              {product.description}
             </p>
-            <h3 className="text-sm font-black text-zinc-900 uppercase tracking-tighter">
-              {product.name}
-            </h3>
-          </div>
-          <div className="text-right">
-            <p className="text-xs font-black text-zinc-900 font-mono">
-              KES {parseFloat(product.price).toLocaleString()}
-            </p>
-          </div>
+          )}
         </div>
 
-        <div className="space-y-4">
-          <button 
+        {/* Price + CTA */}
+        <div className="mt-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <p
+              className="text-xl font-black"
+              style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
+            >
+              KES {parseFloat(product.price).toLocaleString()}
+            </p>
+            {currentQty > 0 && (
+              <span
+                className="text-[10px] font-bold px-2 py-1 rounded-lg"
+                style={{ background: 'var(--accent-subtle)', color: 'var(--accent-primary)' }}
+              >
+                {currentQty} in cart
+              </span>
+            )}
+          </div>
+          <button
             onClick={handleAddToCart}
-            disabled={isOutOfStock || isMaxedOut}
-            className={`w-full py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 active:scale-95
-              ${isOutOfStock || isMaxedOut
-                ? 'bg-zinc-100 text-zinc-300 cursor-not-allowed border border-zinc-200' 
-                : 'bg-zinc-950 text-white hover:bg-blue-600 shadow-lg shadow-zinc-200'}`}
+            disabled={isOutOfStock || isMaxed}
+            id={`add-to-cart-${product.id}`}
+            className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all duration-200 active:scale-95"
+            style={
+              isOutOfStock || isMaxed
+                ? {
+                  background: 'var(--bg-elevated)',
+                  color: 'var(--text-muted)',
+                  cursor: 'not-allowed',
+                  border: '1px solid var(--border-subtle)',
+                }
+                : {
+                  background: 'var(--accent-primary)',
+                  color: '#fff',
+                  boxShadow: '0 4px 20px var(--accent-glow)',
+                }
+            }
           >
             {isOutOfStock ? (
-              "DEPOT EMPTY"
-            ) : isMaxedOut ? (
-              "LIMIT REACHED"
+              'Unavailable'
+            ) : isMaxed ? (
+              'Max Reached'
             ) : (
               <>
-                <ShoppingBag size={14} /> Add to Manifest
+                <ShoppingBag size={15} />
+                Add to Cart
               </>
             )}
           </button>
-          
-          <div className="flex justify-between items-center opacity-30 group-hover:opacity-100 transition-opacity">
-            <p className="text-[7px] font-bold text-zinc-400 uppercase tracking-widest">
-              Available: {product.stock}
-            </p>
-            <p className="text-[7px] font-mono font-bold text-zinc-400">
-              REF_{product.id}
-            </p>
-          </div>
         </div>
       </div>
     </div>
