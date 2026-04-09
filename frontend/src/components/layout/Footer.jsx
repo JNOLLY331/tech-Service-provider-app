@@ -176,7 +176,7 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="tel:+254700000000"
+                  href="tel:+254704345035"
                   className="flex items-start gap-2 text-sm transition-all hover:translate-x-1"
                   style={{ color: 'var(--text-secondary)' }}
                 >

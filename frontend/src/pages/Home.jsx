@@ -89,7 +89,7 @@ const SERVICES = [
   },
   {
     icon: <Code2 size={28} />,
-    title: "E-Portfolio (online Visibity(",
+    title: "E-Portfolio (online Visibity)",
     desc: "Professional digital portfolio that showcases your skills and impresses employers.",
     price: "From KES 2,500",
     color: '#10d99a',
@@ -525,7 +525,7 @@ export default function Home() {
               <Link to="/login" className="btn-primary">
                 Get Started <ArrowRight size={16} />
               </Link>
-              <a href="tel:+254700000000" className="btn-ghost">
+              <a href="tel:+254704345035" className="btn-ghost">
                 Call Us
               </a>
             </div>
