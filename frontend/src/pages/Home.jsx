@@ -741,7 +741,7 @@ export default function Home() {
                 Create Account
               </Link>
               <a
-                href="tel:+254700000000"
+                href="tel:+254704345035"
                 className="px-8 py-4 rounded-2xl font-bold text-sm text-white transition-all hover:scale-105"
                 style={{
                   background: "rgba(255,255,255,0.15)",
