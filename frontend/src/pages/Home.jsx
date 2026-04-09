@@ -411,7 +411,7 @@ export default function Home() {
                   {svc.price}
                 </span>
                 <Link
-                  to="/login"
+                  to="/https://wa.me/254704345035?text=I'm%20interested%20in%20your%20service:%20" 
                   className="flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-xl transition-all hover:scale-105"
                   style={{
                     background: `${svc.color}15`,
