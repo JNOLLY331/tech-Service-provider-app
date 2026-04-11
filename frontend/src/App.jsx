@@ -16,6 +16,7 @@ import Login from './pages/Login';
 import ProductDetail from './pages/ProductDetail';
 import Dashboard from './pages/admin/Dashboard';
 import OrderSuccess from './pages/OrderSuccess';
+import ProductList from   './components/shop/ProductList'
 
 /**
  * Scroll to top on route change
@@ -100,6 +101,7 @@ export default function App() {
     <Router>
       <ScrollToTop />
       <ThemedToaster />
+     
 
       <Layout>
         <Routes>
@@ -108,6 +110,7 @@ export default function App() {
           <Route path="/product/:slug" element={<ProductDetail />} />
           <Route path="/login" element={<Login />} />
           <Route path="/order-success/:id" element={<OrderSuccess />} />
+          <Route path='/ProductList' element={<ProductList /> }/>
 
           {/* Customer Protected */}
           <Route

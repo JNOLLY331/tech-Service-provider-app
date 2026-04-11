@@ -183,7 +183,7 @@ export default function Navbar() {
                       className="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black text-white"
                       style={{ background: 'var(--accent-primary)' }}
                     >
-                      {user?.email?.[0]?.toUpperCase() || 'U'}
+                      {user?.email?.[0]?.toUpperCase() || 'Me'}
                     </div>
                     <span className="text-xs font-bold max-w-[100px] truncate" style={{ color: 'var(--text-secondary)' }}>
                       {user?.first_name || user?.email?.split('@')[0]}
@@ -269,14 +269,14 @@ export default function Navbar() {
               <p className="text-xs font-black" style={{ color: 'var(--text-primary)' }}>
                 {isAuthenticated ? (user?.first_name || user?.email?.split('@')[0]) : 'Guest'}
               </p>
-              <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--accent-primary)' }}>
-                {isAuthenticated ? 'Logged In' : 'System Portal'}
+              <p className="text-[8px] font-bold uppercase tracking-wider" style={{ color: 'var(--accent-primary)' }}>
+                {isAuthenticated ? 'Logged In' : 'Anonymous user'}
               </p>
             </div>
           </div>
           <button
             onClick={() => setIsMenuOpen(false)}
-            className="p-2 rounded-xl transition-all"
+            className="p-2 rounded-xl transition-all hover:text-white"
             style={{ background: 'var(--bg-elevated)', color: 'var(--text-secondary)' }}
           >
             <X size={20} strokeWidth={2.5} />
@@ -322,7 +322,7 @@ export default function Navbar() {
           {/* Theme toggle in mobile */}
           <button
             onClick={toggleTheme}
-            className="w-full flex items-center gap-3 p-4 rounded-2xl font-bold text-sm transition-all"
+            className="w-full flex items-center gap-3 p-4 rounded-xl font-bold text-sm transition-all"
             style={{ background: 'var(--bg-elevated)', color: 'var(--text-secondary)' }}
           >
             {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
@@ -342,7 +342,7 @@ export default function Navbar() {
               to="/login"
               onClick={() => setIsMenuOpen(false)}
               className="btn-primary w-full"
-              style={{ borderRadius: '1rem' }}
+              style={{ borderRadius: '0.5rem' }}
             >
               <LogIn size={16} /> Sign In
             </Link>

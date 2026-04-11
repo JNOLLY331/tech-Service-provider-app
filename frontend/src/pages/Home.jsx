@@ -523,7 +523,7 @@ export default function Home() {
               </p>
             </div>
             <Link
-              to="/"
+              to="/ProductList"
               className="btn-ghost flex items-center gap-2 self-start"
               style={{ whiteSpace: "nowrap" }}
             >

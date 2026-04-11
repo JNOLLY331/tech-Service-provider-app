@@ -1,52 +1,67 @@
 """
 Django settings for config project.
-Production-ready configuration with environment variable support.
+Production-ready with Neon Postgres + fallback for development.
 """
 
 from pathlib import Path
 from datetime import timedelta
 from decouple import config
+import os
+import dj_database_url
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Load .env file
+load_dotenv()
+
 # ─────────────────────────────────────────────
-# CORE SECURITY (loaded from .env)
+# CORE SECURITY
 # ─────────────────────────────────────────────
 SECRET_KEY = config('SECRET_KEY')
-DEBUG = config('DEBUG', default=False, cast=bool)
+DEBUG = config('DEBUG', default=True, cast=bool)   # Set to False in production
+
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
 
 # ─────────────────────────────────────────────
 # INSTALLED APPS
 # ─────────────────────────────────────────────
 INSTALLED_APPS = [
+    'unfold',                    
+    'unfold.contrib.forms',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     # Third-party
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
+    'cloudinary',
+    'cloudinary_storage',
+
     # Local apps
     'core',
     'products',
     'orders',
     'payments',
+    
 ]
 
 AUTH_USER_MODEL = 'core.User'
 
 # ─────────────────────────────────────────────
-# MIDDLEWARE — CorsMiddleware MUST be first
+# MIDDLEWARE
 # ─────────────────────────────────────────────
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',       # ← MUST be first
+    'corsheaders.middleware.CorsMiddleware', 
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -76,22 +91,38 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # ─────────────────────────────────────────────
-# DATABASE
+# DATABASE - Neon Postgres with SQLite fallback
 # ─────────────────────────────────────────────
+DATABASE_URL = config('DATABASE_URL', default=None)
 
-import dj_database_url
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
-DATABASES = {
-    'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
 }
 
-# Recommended for Neon
-DATABASES['default']['CONN_MAX_AGE'] = 60
-DATABASES['default']['OPTIONS'] = {'sslmode': 'require'}
+
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=60,
+            conn_health_checks=True,
+            ssl_require=True
+        )
+    }
+    # Extra Neon recommendations
+    DATABASES['default']['OPTIONS'] = {'sslmode': 'require'}
+    DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = True
+else:
+    # Fallback to SQLite when no DATABASE_URL (for local dev if needed)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+
 # ─────────────────────────────────────────────
 # PASSWORD VALIDATION
 # ─────────────────────────────────────────────
@@ -115,41 +146,47 @@ USE_TZ = True
 # ─────────────────────────────────────────────
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+if not DEBUG:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Security
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ─────────────────────────────────────────────
-# CORS CONFIG — allow Vite dev server
+# CORS CONFIG
 # ─────────────────────────────────────────────
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5174",
     "http://127.0.0.1:5174",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://tech-service-provider-app.vercel.app",
 ]
+
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5174",
     "http://127.0.0.1:5174",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://tech-service-provider-app.vercel.app",
 ]
+
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
-    "accept",
-    "authorization",
-    "content-type",
-    "user-agent",
-    "x-csrftoken",
-    "x-requested-with",
+    "accept", "authorization", "content-type", "user-agent",
+    "x-csrftoken", "x-requested-with",
 ]
-CORS_ALLOW_METHODS = [
-    "DELETE",
-    "GET",
-    "OPTIONS",
-    "PATCH",
-    "POST",
-    "PUT",
-]
+CORS_ALLOW_METHODS = ["DELETE", "GET", "OPTIONS", "PATCH", "POST", "PUT"]
 CORS_EXPOSE_HEADERS = ['Content-Type', 'Authorization']
 CORS_PREFLIGHT_MAX_AGE = 3600
+
 # ─────────────────────────────────────────────
 # DRF + SIMPLE JWT
 # ─────────────────────────────────────────────
@@ -182,3 +219,60 @@ MPESA_CONSUMER_SECRET = config('MPESA_CONSUMER_SECRET', default='')
 MPESA_SHORTCODE = config('MPESA_SHORTCODE', default='174379')
 MPESA_PASSKEY = config('MPESA_PASSKEY', default='')
 MPESA_CALLBACK_URL = config('MPESA_CALLBACK_URL', default='')
+
+# ======================
+# DJANGO cloudinary
+# ======================
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
+# Cloudinary config
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
+}
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+MEDIA_URL = 'https://res.cloudinary.com/your-cloud-name/image/upload/'
+
+
+# ======================
+# DJANGO UNFOLD CONFIG
+# ======================
+UNFOLD = {
+    "SITE_TITLE": "Tech Services Provider",
+    "SITE_HEADER": "Tech Services Admin",
+    "SITE_SUBHEADER": "Manage your platform",
+    
+    "DARK_MODE": True,                    # Enable dark mode by default
+    
+    # Optional: Add your logo (recommended)
+    # "SITE_LOGO": {
+    #     "light": "/static/logo-light.png",
+    #     "dark": "/static/logo-dark.png",
+    # },
+    
+    "SHOW_SIDEBAR": True,
+    "SHOW_HISTORY": True,
+    "SHOW_VIEW_ON_SITE": True,
+    
+    # Navigation
+    "SIDEBAR": {
+        "show_search": True,
+        "show_all_applications": True,
+        "navigation": [
+            {
+                "title": "Core",
+                "separator": True,
+                "items": [
+                    {
+                        "title": "Dashboard",
+                        "icon": "dashboard",
+                        "link": "/admin/",
+                    },
+                ],
+            },
+        ],
+    },
+}

@@ -67,7 +67,7 @@ export default function ProductCard({ product }) {
             src={product.image}
             alt={product.name}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-            style={{ filter: isOutOfStock ? 'grayscale(1) opacity(0.4)' : 'none' }}
+            
           />
         ) : (
           <div
