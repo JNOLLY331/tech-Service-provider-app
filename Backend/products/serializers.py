@@ -11,8 +11,10 @@ class CategorySerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     # For READ: expose full category object + a flat name for cards
     category = CategorySerializer(read_only=True)
-    category_name = serializers.CharField(source='category.name', read_only=True)
-
+    category_name = serializers.SerializerMethodField()
+    def get_category_name(self, obj):
+        return obj.category.name if obj.category else None
+    
     # For WRITE: accept the category ID from the admin form
     category_id = serializers.PrimaryKeyRelatedField(
         queryset=Category.objects.all(),
@@ -31,13 +33,28 @@ class ProductSerializer(serializers.ModelSerializer):
             'price', 'stock', 'image', 'is_available', 'created_at',
         ]
 
+    """
     def get_image(self, obj):
-        """Return a fully-qualified URL for the image, or None."""
+        """"""Return a fully-qualified URL for the image, or None.""""""
         request = self.context.get('request')
         if obj.image and request:
             return request.build_absolute_uri(obj.image.url)
         return None
+    """
 
+    def get_image(self, obj):
+        request = self.context.get('request')
+
+        try:
+            if obj.image and hasattr(obj.image, 'url'):
+                if request:
+                    return request.build_absolute_uri(obj.image.url)
+                return obj.image.url
+        except Exception:
+            return None
+
+        return None
+    
     def create(self, validated_data):
         return Product.objects.create(**validated_data)
 
