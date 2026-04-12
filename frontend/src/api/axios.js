@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://127.0.0.1:8000/api/',
+  baseURL: 'https://tech-service-provider-app.onrender.com/api/',
 });
 
 // ───────────────────────────────────────────────
@@ -49,7 +49,7 @@ api.interceptors.response.use(
 
       try {
         const { data } = await axios.post(
-          'http://127.0.0.1:8000/api/users/token/refresh/',
+          'https://tech-service-provider-app.onrender.com/api/users/token/refresh/',
           { refresh: refreshToken }
         );
 
