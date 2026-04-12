@@ -220,6 +220,7 @@ MPESA_SHORTCODE = config('MPESA_SHORTCODE', default='174379')
 MPESA_PASSKEY = config('MPESA_PASSKEY', default='')
 MPESA_CALLBACK_URL = config('MPESA_CALLBACK_URL', default='')
 
+
 # ======================
 # DJANGO cloudinary
 # ======================

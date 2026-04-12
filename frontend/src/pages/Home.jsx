@@ -222,7 +222,7 @@ export default function Home() {
   return (
     <div style={{ backgroundColor: "var(--bg-base)" }}>
       {/* HERO SECTION */}
-      <section className="relative px-4 md:px-6 py-6">
+      <section className="relative px-4 md:px-6 py-0">
         <Swiper
           modules={[Autoplay, Pagination, EffectFade]}
           effect="fade"
@@ -523,7 +523,7 @@ export default function Home() {
               </p>
             </div>
             <Link
-              to="/ProductList"
+              to="/list"
               className="btn-ghost flex items-center gap-2 self-start"
               style={{ whiteSpace: "nowrap" }}
             >

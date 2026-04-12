@@ -36,7 +36,7 @@ export default function Navbar() {
 
   const navLinks = [
     { name: 'Home', path: '/', icon: <Home size={16} /> },
-    { name: 'Services', path: '/category/services', icon: <Cpu size={16} /> },
+    { name: 'Services', path: '/list', icon: <Cpu size={16} /> },
     { name: 'Portfolio', path: '/category/portfolio', icon: <Globe size={16} /> },
   ];
 
