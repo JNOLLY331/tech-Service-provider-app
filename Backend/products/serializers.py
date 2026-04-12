@@ -9,45 +9,30 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    # For READ: expose full category object + a flat name for cards
     category = CategorySerializer(read_only=True)
     category_name = serializers.CharField(source='category.name', read_only=True)
-
-    # For WRITE: accept the category ID from the admin form
     category_id = serializers.PrimaryKeyRelatedField(
         queryset=Category.objects.all(),
         source='category',
         write_only=True
     )
 
-    # Absolute image URL so the frontend never has to construct it manually
     image = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
         fields = [
             'id', 'category', 'category_id', 'category_name',
-            'name', 'slug', 'description',
-            'price', 'stock', 'image', 'is_available', 'created_at',
+            'name', 'slug', 'description', 'price', 'stock',
+            'image', 'is_available', 'created_at',
         ]
 
-        image = serializers.SerializerMethodField()
-
     def get_image(self, obj):
-        """Return full Cloudinary URL safely"""
+        """Safe image URL for Cloudinary"""
         if not obj.image:
             return None
         try:
-            # This is the most reliable way with django-cloudinary-storage
+            # Most reliable way for django-cloudinary-storage
             return obj.image.url
-        except (AttributeError, ValueError, TypeError):
+        except Exception:
             return None
-
-    def create(self, validated_data):
-        return Product.objects.create(**validated_data)
-
-    def update(self, instance, validated_data):
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
-        return instance
