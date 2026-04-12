@@ -31,20 +31,16 @@ class ProductSerializer(serializers.ModelSerializer):
             'price', 'stock', 'image', 'is_available', 'created_at',
         ]
 
+        image = serializers.SerializerMethodField()
+
     def get_image(self, obj):
-        """Safely return Cloudinary image URL"""
+        """Return full Cloudinary URL safely"""
         if not obj.image:
             return None
-        
         try:
-            # Cloudinary storage should return a full https URL
-            url = obj.image.url
-            if url:
-                return url
-            return None
-        except Exception as e:
-            # Silently fail in production - don't crash the whole list
-            print(f"Image URL error for product {obj.id}: {e}")  # This will appear in Render logs
+            # This is the most reliable way with django-cloudinary-storage
+            return obj.image.url
+        except (AttributeError, ValueError, TypeError):
             return None
 
     def create(self, validated_data):
