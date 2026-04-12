@@ -221,21 +221,27 @@ MPESA_PASSKEY = config('MPESA_PASSKEY', default='')
 MPESA_CALLBACK_URL = config('MPESA_CALLBACK_URL', default='')
 
 
-# ======================
-# DJANGO cloudinary
-# ======================
-import cloudinary
-import cloudinary.uploader
-import cloudinary.api
 
-# Cloudinary config
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
-    'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
-    'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
+# ======================
+# MEDIA FILES - Cloudinary (Django 6.0 compatible)
+# ======================
+STORAGES = {
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
 }
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-MEDIA_URL = 'https://res.cloudinary.com/your-cloud-name/image/upload/'
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME'),    
+    'API_KEY': config('CLOUDINARY_API_KEY'),
+    'API_SECRET': config('CLOUDINARY_API_SECRET'),
+}
+
+# Cloudinary will override this with real URLs, but keep it for compatibility
+MEDIA_URL = 'https://res.cloudinary.com/' + config('CLOUDINARY_CLOUD_NAME') + '/image/upload/'
 
 
 # ======================
