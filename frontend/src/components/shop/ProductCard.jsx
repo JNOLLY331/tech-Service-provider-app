@@ -84,7 +84,7 @@ export default function ProductCard({ product }) {
             className="w-1.5 h-1.5 rounded-full inline-block"
             style={{ background: status.dot }}
           />
-          {status.label}
+             {/* {status.label} */}
         </div>
 
         {/* Quick view overlay */}
