@@ -32,11 +32,20 @@ class ProductSerializer(serializers.ModelSerializer):
         ]
 
     def get_image(self, obj):
-        """Return a fully-qualified URL for the image, or None."""
-        request = self.context.get('request')
-        if obj.image and request:
-            return request.build_absolute_uri(obj.image.url)
-        return None
+        """Safely return Cloudinary image URL"""
+        if not obj.image:
+            return None
+        
+        try:
+            # Cloudinary storage should return a full https URL
+            url = obj.image.url
+            if url:
+                return url
+            return None
+        except Exception as e:
+            # Silently fail in production - don't crash the whole list
+            print(f"Image URL error for product {obj.id}: {e}")  # This will appear in Render logs
+            return None
 
     def create(self, validated_data):
         return Product.objects.create(**validated_data)
